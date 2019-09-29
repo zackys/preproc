@@ -11,12 +11,16 @@ import java.io.PipedWriter;
 import java.io.Reader;
 import java.nio.charset.Charset;
 import java.nio.charset.StandardCharsets;
+import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.stream.Stream;
 
 import org.apache.commons.text.StringEscapeUtils;
 
+/**
+ * 事前処理の実装例（関数版）
+ */
 public class PreprocedReader extends PipedReader {
 
     private static final String contents =
@@ -29,12 +33,56 @@ public class PreprocedReader extends PipedReader {
 
     public static void main( String[] args ) throws IOException{
 
-        //InputStream is0 = Files.newInputStream(pathIn);
-        InputStream is0 = new ByteArrayInputStream(contents.getBytes());
+        sample03();
+        //sample04();
+    }
 
+    /**
+     * 3.関数版の使用例
+     */
+    static void sample03() throws IOException{
+
+        InputStream is0 = Files.newInputStream(pathIn);
         InputStreamReader reader1 = new InputStreamReader(is0, csIn);
         Reader reader2 = new PreprocedReader(reader1, TRIM_COL(0, 5), DUMP_STDOUT, ESCAPE);
-        //Reader reader2 = new PreprocedReader(reader1, ESCAPE, DUMP_STDOUT, TRIM_COL(0, 5));
+        BufferedReader reader = new BufferedReader(reader2);
+
+        System.out.println("--本処理--");
+        try (reader) {
+            reader.lines().forEach(line->{
+                // 本処理を記述
+                System.out.println(line);
+            });
+        }
+    }
+
+    /**
+     * 4.関数版の使用例（事前処理の実行順を変えてみる）
+     */
+    static void sample04() throws IOException{
+
+        InputStream is0 = Files.newInputStream(pathIn);
+        InputStreamReader reader1 = new InputStreamReader(is0, csIn);
+        Reader reader2 = new PreprocedReader(reader1, ESCAPE, DUMP_STDOUT, TRIM_COL(0, 5));
+        BufferedReader reader = new BufferedReader(reader2);
+
+        System.out.println("--本処理--");
+        try (reader) {
+            reader.lines().forEach(line->{
+                // 本処理を記述
+                System.out.println(line);
+            });
+        }
+    }
+
+    /**
+     * ※ByteArrayInputStream版
+     */
+    static void sample04b() throws IOException{
+
+        InputStream is0 = new ByteArrayInputStream(contents.getBytes());
+        InputStreamReader reader1 = new InputStreamReader(is0, csIn);
+        Reader reader2 = new PreprocedReader(reader1, ESCAPE, DUMP_STDOUT, TRIM_COL(0, 5));
         BufferedReader reader = new BufferedReader(reader2);
 
         System.out.println("--本処理--");
@@ -47,6 +95,7 @@ public class PreprocedReader extends PipedReader {
     }
 
     // ====================================================================== //
+    // 事前処理実行クラスの実装
 
     private final Reader in;
 
@@ -118,8 +167,7 @@ public class PreprocedReader extends PipedReader {
             return (int n, String v) -> next.apply(n, this.apply(n, v));
         }
 
-//        default Preproc compose(Preproc prev) {
-//            Objects.requireNonNull(prev);
+//        default Preprocess compose(Preprocess prev) {
 //            return (int n, String v) -> this.apply(n, prev.apply(n, v));
 //        }
 
