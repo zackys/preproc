@@ -2,6 +2,7 @@ package preproc;
 
 import java.io.BufferedReader;
 import java.io.BufferedWriter;
+import java.io.ByteArrayInputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
@@ -14,6 +15,9 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 
+/**
+ * 事前処理の実装例（Decorator版）
+ */
 public class PreprocedReaderOld extends PipedReader {
 
     private static final String contents =
@@ -26,27 +30,15 @@ public class PreprocedReaderOld extends PipedReader {
 
     public static void main( String[] args ) throws IOException{
 
-        InputStream is0 = Files.newInputStream(pathIn);
-        //InputStream is0 = new ByteArrayInputStream(contents.getBytes());
-        InputStreamReader reader1 = new InputStreamReader(is0, csIn);
-        Reader reader2 = new PreprocedReaderOld(reader1);
-        BufferedReader reader = new BufferedReader(reader2);
-
-//        Reader reader2 = TRIM_COL(reader1, 0, 5);
-//        Reader reader3 = DUMP_STDOUT(reader2);
-//        Reader reader4 = ESCAPE(reader3);
-//        BufferedReader reader = new BufferedReader(reader4);
-
-        System.out.println("--本処理--");
-        try (reader) {
-            reader.lines().forEach(line->{
-                // 本処理を記述
-                System.out.println(line);
-            });
-        }
+        //sample00();
+        //sample01();
+        sample02();
     }
 
-    public static void main0( String[] args ) throws IOException{
+    /**
+     * 0.Decoratorの使用例（事前処理追加前）
+     */
+    static void sample00() throws IOException{
 
         InputStream is0 = Files.newInputStream(pathIn);
         InputStreamReader reader1 = new InputStreamReader(is0, csIn);
@@ -62,7 +54,68 @@ public class PreprocedReaderOld extends PipedReader {
         }
     }
 
+    /**
+     * 1.Decoratorの使用例（事前処理を追加）
+     */
+    static final void sample01() throws IOException {
+
+        InputStream is0 = Files.newInputStream(pathIn);
+        InputStreamReader reader1 = new InputStreamReader(is0, csIn);
+        Reader reader2 = new PreprocedReaderOld(reader1); // 事前処理を追加
+        BufferedReader reader = new BufferedReader(reader2);
+
+        System.out.println("--本処理--");
+        try (reader) {
+            reader.lines().forEach(line->{
+                // 本処理を記述
+                System.out.println(line);
+            });
+        }
+    }
+
+    /**
+     * 2.Decoratorの使用例（複数の事前処理を追加）
+     */
+    static final void sample02() throws IOException {
+
+        InputStream is0 = Files.newInputStream(pathIn);
+        InputStreamReader reader1 = new InputStreamReader(is0, csIn);
+        Reader reader2 = TRIM_COL(reader1, 0, 5);  // 事前処理を追加
+        Reader reader3 = DUMP_STDOUT(reader2);     // 事前処理その２を追加
+        Reader reader4 = ESCAPE(reader3);          // 事前処理その３を追加
+        BufferedReader reader = new BufferedReader(reader4);
+
+        System.out.println("--本処理--");
+        try (reader) {
+            reader.lines().forEach(line->{
+                // 本処理を記述
+                System.out.println(line);
+            });
+        }
+    }
+
+    /**
+     * ※ByteArrayInputStream版
+     */
+    static final void sample02b() throws IOException {
+        InputStream is0 = new ByteArrayInputStream(contents.getBytes());
+        InputStreamReader reader1 = new InputStreamReader(is0, csIn);
+        Reader reader2 = TRIM_COL(reader1, 0, 5);  // 事前処理を追加
+        Reader reader3 = DUMP_STDOUT(reader2);     // 事前処理その２を追加
+        Reader reader4 = ESCAPE(reader3);          // 事前処理その３を追加
+        BufferedReader reader = new BufferedReader(reader4);
+
+        System.out.println("--本処理--");
+        try (reader) {
+            reader.lines().forEach(line->{
+                // 本処理を記述
+                System.out.println(line);
+            });
+        }
+    }
+
     // ====================================================================== //
+    // 事前処理実行クラスの実装
 
     protected Reader in;
 
@@ -99,6 +152,9 @@ public class PreprocedReaderOld extends PipedReader {
     public void close() throws IOException {
         in.close();
     }
+
+    // -------------------------------------------------- //
+    // 事前処理の実装
 
     /**
      * 《事前処理》エスケープ処理を行う
