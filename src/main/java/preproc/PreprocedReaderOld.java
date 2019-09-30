@@ -16,7 +16,7 @@ import java.nio.file.Path;
 import java.nio.file.Paths;
 
 /**
- * 事前処理の実装例（Decorator版）
+ * 事前処理の実装例（Decoratorパターン版）
  */
 public class PreprocedReaderOld extends PipedReader {
 
@@ -137,14 +137,14 @@ public class PreprocedReaderOld extends PipedReader {
             String line;
             int lineNo = 1;
             while ((line = reader.readLine()) != null) {
-                pipedOut.write(preproc(lineNo, line));
+                pipedOut.write(preprocess(lineNo, line));
                 pipedOut.write('\n');
                 lineNo++;
             }
         }
     }
 
-    protected String preproc(int lineNo, String line) {
+    protected String preprocess(int lineNo, String line) {
         return "!事前処理! " + line;
     }
 
@@ -167,7 +167,7 @@ public class PreprocedReaderOld extends PipedReader {
         }
 
         @Override
-        public String preproc(int lineNo, String line) {
+        public String preprocess(int lineNo, String line) {
             return org.apache.commons.text.StringEscapeUtils.escapeJava(line);
         }
     }
@@ -192,7 +192,7 @@ public class PreprocedReaderOld extends PipedReader {
         }
 
         @Override
-        public String preproc(int lineNo, String line) {
+        public String preprocess(int lineNo, String line) {
             final int len = line.length();
             if (len < to) {
                 return line.substring(from);
@@ -218,7 +218,7 @@ public class PreprocedReaderOld extends PipedReader {
         }
 
         @Override
-        public String preproc(int lineNo, String line) {
+        public String preprocess(int lineNo, String line) {
             System.out.println("[DUMP]"+line);
 
             return line;
