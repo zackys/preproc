@@ -155,7 +155,7 @@ public class PreprocedReader extends PipedReader {
          */
         public String apply(int lineNo, String line);
 
-        // ----- //
+        // ----- ----- //
 
         /**
          * 事前処理の合成
@@ -181,7 +181,7 @@ public class PreprocedReader extends PipedReader {
         }
 
         /**
-         * 複数の事前処理を合成する
+         * 複数の事前処理を合成するユーティリティ関数
          *
          * @param preprocs 合成対象の事前処理
          * @return
